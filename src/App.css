@@ -34,20 +34,24 @@
 .dashboard-card {
   background-color: #ffffff;
   border-radius: 12px;
-  padding: 14px 18px;             /* Less padding for compact look */
+  padding: 14px 18px;
   box-shadow: 0 6px 12px rgba(74, 144, 226, 0.09);
   font-size: 1rem;
   min-width: 240px;
   max-width: 300px;
+
+  /* For map specifically */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-.label {
-  font-size: 1rem;
-  margin-bottom: 3px;
-}
-
-.value {
-  font-size: 1.18rem;
+.leaflet-container {
+  width: 100% !important;
+  height: 280px !important; /* Adjust height */
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(74, 144, 226, 0.15);
 }
 
 .car-image-container {

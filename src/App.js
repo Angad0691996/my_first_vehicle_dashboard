@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import car from './car.png'; // import car image
+import LocationMap from './LocationMap';
+
 
 function App() {
   const [vehicleData, setVehicleData] = useState(null);
@@ -41,7 +43,10 @@ function App() {
               </div>
               <div className="dashboard-card">
                 <span className="label">Location:</span>
-                <span className="value">{vehicleData.location}</span>
+                <LocationMap
+                  lat={parseFloat(vehicleData.location.split(',')[0].trim())}
+                  lng={parseFloat(vehicleData.location.split(',')[1].trim())}
+                />
               </div>
             </div>
             <div className="car-image-container">
