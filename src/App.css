@@ -1,38 +1,75 @@
 .App {
   text-align: center;
+  padding: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.heading {
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: #4a90e2; /* Light blue */
+  margin-bottom: 20px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.dashboard-row {
+  display: flex;
+  align-items: center;            /* Center cards and image vertically */
+  justify-content: center;
+  gap: 48px;                      /* Extra gap for separation */
+  width: 90vw;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.dashboard {
+  flex: 0 0 300px;                /* Smaller card stack width */
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 16px;
+  text-align: left;
+  justify-content: center;        /* Vertically center cards */
+}
+
+.dashboard-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 14px 18px;             /* Less padding for compact look */
+  box-shadow: 0 6px 12px rgba(74, 144, 226, 0.09);
+  font-size: 1rem;
+  min-width: 240px;
+  max-width: 300px;
+}
+
+.label {
+  font-size: 1rem;
+  margin-bottom: 3px;
+}
+
+.value {
+  font-size: 1.18rem;
+}
+
+.car-image-container {
+  flex: 0 0 520px;      /* Increase container width */
+  display: flex;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  align-items: center;
+  height: 100%;          /* Ensure full row height */
+  background: #e3f0fc;
+  border-radius: 20px;
+  box-shadow: 0 6px 24px rgba(74,144,226,0.12); /* Subtle shadow */
+  padding: 15px;
 }
 
-.App-link {
-  color: #61dafb;
+.car-image {
+  max-width: 92%;
+  max-height: 330px;     /* Higher max-height for large image */
+  width: auto;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(74,144,226,0.21);
+  background-color: #e3f0fc;
+  object-fit: contain;   /* Ensures the image doesn't stretch */
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}

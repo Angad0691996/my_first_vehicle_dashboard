@@ -1,23 +1,57 @@
-import logo from './logo.svg';
+import React, { useEffect, useState } from 'react';
 import './App.css';
+import car from './car.png'; // import car image
 
 function App() {
+  const [vehicleData, setVehicleData] = useState(null);
+
+  useEffect(() => {
+    const fetchData = () => {
+      fetch('/latest')
+        .then(res => res.json())
+        .then(data => setVehicleData(data))
+        .catch(err => console.error('Error fetching vehicle data:', err));
+    };
+
+    fetchData();
+    const intervalId = setInterval(fetchData, 2000);
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <h1 className="heading">SAMSAN Technishque Vehicle Dashboard</h1>
       </header>
+      <div className="dashboard-row">
+        {vehicleData && Object.keys(vehicleData).length > 0 ? (
+          <>
+            <div className="dashboard">
+              <div className="dashboard-card">
+                <span className="label">Vehicle ID:</span>
+                <span className="value">{vehicleData.vehicle_ID}</span>
+              </div>
+              <div className="dashboard-card">
+                <span className="label">Speed:</span>
+                <span className="value">{vehicleData.Speed} km/h</span>
+              </div>
+              <div className="dashboard-card">
+                <span className="label">Timestamp:</span>
+                <span className="value">{vehicleData.timestamp}</span>
+              </div>
+              <div className="dashboard-card">
+                <span className="label">Location:</span>
+                <span className="value">{vehicleData.location}</span>
+              </div>
+            </div>
+            <div className="car-image-container">
+              <img className="car-image" src={car} alt="Car" />
+            </div>
+          </>
+        ) : (
+          <p>Loading vehicle data...</p>
+        )}
+      </div>
     </div>
   );
 }
