@@ -7,6 +7,7 @@ import json
 import mysql.connector
 from mysql.connector import errorcode
 from datetime import datetime
+from flask import jsonify
 
 
 
@@ -110,6 +111,16 @@ def get_latest():
 
 def run_flask():
     app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
+
+@app.route('/api/logs', methods=['GET'])
+def get_logs():
+    cnx = get_db_connection()
+    cursor = cnx.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM vehicle_logs ORDER BY timestamp DESC LIMIT 50")
+    rows = cursor.fetchall()
+    cursor.close()
+    cnx.close()
+    return jsonify(rows)
 
 
 if __name__ == "__main__":
