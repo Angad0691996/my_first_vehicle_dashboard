@@ -4,12 +4,42 @@ from flask_cors import CORS
 import paho.mqtt.client as paho
 import ssl
 import json
+import mysql.connector
+from mysql.connector import errorcode
+from datetime import datetime
 
+
+
+# Global variable to store the latest payload for the API
 latest_payload = {}
+
+# MySQL config (update with your username, password, host)
+db_config = {
+    'user': 'vehicledbuser',
+    'password': 'Mycloud@25',
+    'host': 'localhost',
+    'database': 'vehicle_dashboard',
+    'raise_on_warnings': True
+}
+
+# Initialize MySQL connection
+def get_db_connection():
+    try:
+        cnx = mysql.connector.connect(**db_config)
+        return cnx
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            print("Something is wrong with your username or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            print("Database does not exist, please create it")
+        else:
+            print(err)
+        return None
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code: " + str(rc))
     client.subscribe("vehicle/data", qos=1)
+from datetime import datetime
 
 def on_message(client, userdata, msg):
     global latest_payload
@@ -19,8 +49,41 @@ def on_message(client, userdata, msg):
         payload = json.loads(msg.payload.decode())
         latest_payload = payload
         print("  Payload:", json.dumps(payload, indent=2))
+
+        # Convert timestamp from "13/10/2025 13:31:06 IST" to MySQL format
+        raw_timestamp = payload.get("timestamp", "").replace(" IST", "")
+        dt_obj = datetime.strptime(raw_timestamp, "%d/%m/%Y %H:%M:%S")
+        mysql_timestamp = dt_obj.strftime("%Y-%m-%d %H:%M:%S")
+
+        # Insert into MySQL database
+        cnx = get_db_connection()
+        if cnx:
+            cursor = cnx.cursor()
+            insert_stmt = (
+                "INSERT INTO vehicle_logs "
+                "(vehicle_ID, Speed, Battery_voltage, Engine_Temp, Fuel_Level, timestamp, location) "
+                "VALUES (%s, %s, %s, %s, %s, %s, %s)"
+            )
+            data = (
+                payload.get("vehicle_ID"),
+                float(payload.get("Speed", 0)),
+                float(payload.get("Battery_voltage", 0)),
+                float(payload.get("Engine_Temp", 0)),
+                float(payload.get("Fuel_Level", 0)),
+                mysql_timestamp,           # Use converted timestamp here
+                payload.get("location")
+            )
+            cursor.execute(insert_stmt, data)
+            cnx.commit()
+            cursor.close()
+            cnx.close()
+            print("  Data inserted into database.")
+
     except json.JSONDecodeError:
         print("  Invalid JSON payload")
+    except Exception as e:
+        print("  Error inserting into database:", e)
+
 
 mqttc = paho.Client()
 mqttc.on_connect = on_connect
@@ -46,7 +109,8 @@ def get_latest():
     return jsonify(latest_payload)
 
 def run_flask():
-    app.run(port=5000, debug=False, use_reloader=False)
+    app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
+
 
 if __name__ == "__main__":
     flask_thread = threading.Thread(target=run_flask)

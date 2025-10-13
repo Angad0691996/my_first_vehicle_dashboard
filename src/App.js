@@ -21,7 +21,11 @@ function App() {
   }, []);
 
   if (!vehicleData || Object.keys(vehicleData).length === 0) {
-    return <p>Loading vehicle data...</p>;
+    return (
+      <div className="loading-container">
+        <p className="loading-text">Loading vehicle data...</p>
+      </div>
+    );
   }
 
   const [lat, lng] = vehicleData.location
@@ -30,42 +34,26 @@ function App() {
 
   return (
     <div className="App">
-      <header>
+      <header className="app-header">
         <h1 className="heading">SAMSAN Technishque Vehicle Dashboard</h1>
       </header>
 
-      <div className="dashboard-row">
+      <main className="dashboard-row">
         {/* LEFT SIDE - DATA */}
-        <div className="dashboard">
-          <div className="dashboard-card">
-            <span className="label">Vehicle ID:</span>
-            <span className="value">{vehicleData.vehicle_ID}</span>
-          </div>
-
-          <div className="dashboard-card">
-            <span className="label">Speed:</span>
-            <span className="value">{vehicleData.Speed} km/h</span>
-          </div>
-
-          <div className="dashboard-card">
-            <span className="label">Battery Voltage:</span>
-            <span className="value">{vehicleData.Battery_voltage} V</span>
-          </div>
-
-          <div className="dashboard-card">
-            <span className="label">Engine Temp:</span>
-            <span className="value">{vehicleData.Engine_Temp} °C</span>
-          </div>
-
-          <div className="dashboard-card">
-            <span className="label">Fuel Level:</span>
-            <span className="value">{vehicleData.Fuel_Level} %</span>
-          </div>
-
-          <div className="dashboard-card">
-            <span className="label">Timestamp:</span>
-            <span className="value">{vehicleData.timestamp}</span>
-          </div>
+        <section className="dashboard">
+          {[
+            { label: 'Vehicle ID', value: vehicleData.vehicle_ID },
+            { label: 'Speed', value: `${vehicleData.Speed} km/h` },
+            { label: 'Battery Voltage', value: `${vehicleData.Battery_voltage} V` },
+            { label: 'Engine Temp', value: `${vehicleData.Engine_Temp} °C` },
+            { label: 'Fuel Level', value: `${vehicleData.Fuel_Level} %` },
+            { label: 'Timestamp', value: vehicleData.timestamp }
+          ].map((item, idx) => (
+            <div className="dashboard-card" key={idx}>
+              <span className="label">{item.label}:</span>
+              <span className="value">{item.value}</span>
+            </div>
+          ))}
 
           <div className="dashboard-card">
             <span className="label">Location:</span>
@@ -73,15 +61,15 @@ function App() {
               🌍 View Location
             </button>
           </div>
-        </div>
+        </section>
 
         {/* RIGHT SIDE - CAR IMAGE */}
-        <div className="visuals">
+        <aside className="visuals">
           <div className="car-image-container">
             <img className="car-image" src={car} alt="Car" />
           </div>
-        </div>
-      </div>
+        </aside>
+      </main>
 
       {/* FULL-SCREEN MAP MODAL */}
       {showMap && (
