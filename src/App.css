@@ -186,3 +186,51 @@ body, html {
   height: 100% !important;
   border-radius: 0;
 }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 1em;
+  color: #333;
+  background-color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+th, td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+th {
+  background-color: #2563eb;
+  color: white;
+  font-weight: 600;
+}
+
+tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.tab-btn {
+  padding: 12px 24px;       /* Controls button height and padding */
+  font-size: 1.2rem;        /* Controls text size */
+  border-radius: 8px;       /* Rounded corners */
+  cursor: pointer;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  transition: background-color 0.2s ease;
+}
+
+.tab-btn:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.tab-btn:disabled {
+  background-color: #9ca3af;
+  cursor: default;
+}
