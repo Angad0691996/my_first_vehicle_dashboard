@@ -1,0 +1,31 @@
+services:
+  mysql-db:
+    image: mysql:8.0
+    env_file:
+      - .env
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+
+  backend-subscriber:
+    build: ./backend
+    container_name: backend-subscriber
+    env_file:
+      - .env
+    depends_on:
+      - mysql-db
+    ports:
+      - "5000:5000"
+
+  react-dashboard:
+    build: .
+    container_name: react-dashboard
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend-subscriber
+
+volumes:
+  mysql_data:

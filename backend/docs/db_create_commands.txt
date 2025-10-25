@@ -1,0 +1,18 @@
+
+CREATE DATABASE vehicle_dashboard;
+USE vehicle_dashboard;
+
+CREATE TABLE vehicle_logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  vehicle_ID VARCHAR(100) NOT NULL,
+  Speed FLOAT,
+  Battery_voltage FLOAT,
+  Engine_Temp FLOAT,
+  Fuel_Level FLOAT,
+  timestamp DATETIME,
+  location VARCHAR(255)
+);
+
+CREATE USER 'vehicledbuser'@'localhost' IDENTIFIED BY 'Mycloud@25';
+GRANT SELECT, INSERT, UPDATE ON vehicle_dashboard.* TO 'vehicledbuser'@'localhost';
+FLUSH PRIVILEGES;

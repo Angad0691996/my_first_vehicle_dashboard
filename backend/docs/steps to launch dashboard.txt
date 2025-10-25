@@ -1,0 +1,39 @@
+Real-Time Vehicle Dashboard: Step-by-Step Guide
+1. Set Up the Python MQTT Subscriber
+Created subscriber.py to connect to AWS IoT Core using MQTT.
+Subscribed to the topic vehicle/data.
+Parsed incoming JSON payloads and stored the latest message in a global variable.
+2. Expose Data via Flask API
+Integrated Flask into subscriber.py to serve the latest MQTT payload over HTTP.
+Added a /latest endpoint that returns the most recent vehicle data as JSON.
+Used flask_cors.CORS to allow cross-origin requests from the React frontend.
+Ran Flask in a separate thread so MQTT and Flask could run together.
+3. Set Up the React Frontend
+Used create-react-app to scaffold the React project in the vehicle-dashboard folder.
+Installed all dependencies with npm install.
+Fixed the package.json to use the correct version of react-scripts.
+4. Fetch Data from Flask in React
+Edited App.js to fetch data from http://localhost:5000/latest every 2 seconds.
+Stored the fetched data in React state and displayed it on the page.
+5. Display Data in a Dashboard Layout
+Parsed and displayed each field (vehicle_ID, Speed, timestamp, location) in a card-style dashboard.
+Used conditional rendering to show a message if no data is available.
+6. Styled the Dashboard
+Edited App.css to add a modern, card-based dashboard look.
+Used Flexbox for layout and added custom styles for cards, labels, and values.
+7. Tested the Full Stack
+Started the Python subscriber:
+Started the React app:
+Verified that published MQTT data appeared in real time on the dashboard.
+Result
+You now have a real-time vehicle dashboard that:
+
+Receives data from AWS IoT Core via MQTT.
+Serves the latest data via a Flask API.
+Displays the data in a styled React dashboard.
+Next Steps (Optional):
+
+Add more fields or charts.
+Deploy the backend and frontend.
+Add authentication or user management.
+If you need a PDF or formatted README, let me know!

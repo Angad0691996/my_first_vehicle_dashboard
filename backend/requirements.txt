@@ -1,0 +1,6 @@
+Flask
+Flask-Cors
+paho-mqtt
+gunicorn
+requests
+mysql-connector-python

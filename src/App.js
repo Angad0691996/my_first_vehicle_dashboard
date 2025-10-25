@@ -1,0 +1,118 @@
+import React, { useEffect, useState } from 'react';
+import './App.css';
+import car from './car.png';
+import LocationMap from './LocationMap';
+import VehicleLogs from './VehicleLogs';
+const API_URL = process.env.REACT_APP_BACKEND_URL;
+
+function App() {
+  const [vehicleData, setVehicleData] = useState(null);
+  const [showMap, setShowMap] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
+
+  useEffect(() => {
+    const fetchData = () => {
+      fetch(`${API_URL}/latest`)
+        .then(res => res.json())
+        .then(data => {
+          console.log('Fetched vehicle data:', data);
+          setVehicleData(data);
+        })
+        .catch(err => console.error('Error fetching vehicle data:', err));
+    };
+
+    fetchData();
+    const intervalId = setInterval(fetchData, 2000);
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const [lat, lng] = vehicleData?.location
+    ? vehicleData.location.split(',').map(coord => parseFloat(coord.trim()))
+    : [0, 0];
+
+  // Simplified loading condition to help with debugging
+  if (!vehicleData) {
+    return (
+      <div className="loading-container">
+        <p className="loading-text">Loading vehicle data...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="App">
+      <header className="app-header">
+        <h1 className="heading">SAMSAN Technishque Vehicle Dashboard</h1>
+      </header>
+      <nav style={{ margin: '20px', textAlign: 'center' }}>
+        <button
+          className="tab-btn"
+          onClick={() => setActiveTab('dashboard')}
+          disabled={activeTab === 'dashboard'}
+        >
+          Dashboard
+        </button>
+        <button
+          className="tab-btn"
+          onClick={() => setActiveTab('history')}
+          disabled={activeTab === 'history'}
+          style={{ marginLeft: '10px' }}
+        >
+          History
+        </button>
+      </nav>
+
+      {activeTab === 'dashboard' && (
+        <main className="dashboard-row">
+          {/* LEFT SIDE - DATA */}
+          <section className="dashboard">
+            {/* Existing vehicle data cards */}
+            {[
+              { label: 'Vehicle ID', value: vehicleData.vehicle_ID ?? 'N/A' },
+              { label: 'Speed', value: vehicleData.Speed ? `${vehicleData.Speed} km/h` : 'N/A' },
+              { label: 'Battery Voltage', value: vehicleData.Battery_voltage ? `${vehicleData.Battery_voltage} V` : 'N/A' },
+              { label: 'Engine Temp', value: vehicleData.Engine_Temp ? `${vehicleData.Engine_Temp} °C` : 'N/A' },
+              { label: 'Fuel Level', value: vehicleData.Fuel_Level ? `${vehicleData.Fuel_Level} %` : 'N/A' },
+              { label: 'Timestamp', value: vehicleData.timestamp ?? 'N/A' }
+            ].map((item, idx) => (
+              <div className="dashboard-card" key={idx}>
+                <span className="label">{item.label}:</span>
+                <span className="value">{item.value}</span>
+              </div>
+            ))}
+
+            <div className="dashboard-card">
+              <span className="label">Location:</span>
+              <button className="location-btn" onClick={() => setShowMap(true)}>
+                🌍 View Location
+              </button>
+            </div>
+          </section>
+
+          {/* RIGHT SIDE - CAR IMAGE */}
+          <aside className="visuals">
+            <div className="car-image-container">
+              <img className="car-image" src={car} alt="Car" />
+            </div>
+          </aside>
+        </main>
+      )}
+
+      {activeTab === 'history' && <VehicleLogs />}
+
+      {/* FULL-SCREEN MAP MODAL */}
+      {showMap && (
+        <div className="map-modal" onClick={() => setShowMap(false)}>
+          <div className="map-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setShowMap(false)}>
+              ✖
+            </button>
+            <LocationMap lat={lat} lng={lng} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
