@@ -2,10 +2,6 @@
 
 # ok, lets make a proper readme with this info with proper commands "PS D:\Full_Stack\DevOps_practices\project1_containerize\assets> docker ps
 
-CONTAINER ID   IMAGE                                      COMMAND                  CREATED             STATUS             PORTS                                         NAMES
-607e0d2d120f   project1_containerize-react-dashboard      "/docker-entrypoint.…"   36 minutes ago      Up 36 minutes      0.0.0.0:3000->80/tcp, [::]:3000->80/tcp       react-dashboard
-f121f82853aa   project1_containerize-backend-subscriber   "python subscriber.py"   About an hour ago   Up 28 minutes      0.0.0.0:5000->5000/tcp, [::]:5000->5000/tcp   backend-subscriber
-7affb566316e   mysql:8.0                                  "docker-entrypoint.s…"   About an hour ago   Up About an hour   0.0.0.0:3307->3306/tcp, [::]:3307->3306/tcp   project1_containerize-mysql-db-1" and here is are the images "PS D:\Full_Stack\DevOps_practices\project1_containerize\assets> ls
 
     Directory: D:\Full_Stack\DevOps_practices\project1_containerize\assets
     Mode                 LastWriteTime         Length Name
