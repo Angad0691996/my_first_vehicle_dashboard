@@ -1,0 +1,52 @@
+# ============================================================
+# Docker Compose - Production Setup (Ubuntu)
+# ------------------------------------------------------------
+# This setup pulls prebuilt images from Docker Hub and runs
+# them as containers. Ideal for production or deployment on
+# servers like AWS EC2 or Ubuntu local environments.
+# ============================================================
+
+services:
+  # ------------------------------
+  # MySQL Database Service
+  # ------------------------------
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    env_file:
+      - .env                      # Load MySQL credentials (e.g. MYSQL_ROOT_PASSWORD, MYSQL_DATABASE)
+    ports:
+      - "3307:3306"               # Host:Container port mapping
+    volumes:
+      - mysql_data:/var/lib/mysql # Persistent storage for DB data
+      - ./mysql-init:/docker-entrypoint-initdb.d # Auto-run SQL scripts on first start
+
+  # ------------------------------
+  # Backend Subscriber (Python)
+  # ------------------------------
+  backend-subscriber:
+    image: angad696/backend-subscriber:latest  # Pull from Docker Hub
+    container_name: backend-subscriber
+    env_file:
+      - .env
+    depends_on:
+      - mysql-db
+    ports:
+      - "5000:5000"               # Flask API exposed on port 5000
+
+  # ------------------------------
+  # React Dashboard (Frontend)
+  # ------------------------------
+  react-dashboard:
+    image: angad696/react-dashboard:latest     # Pull from Docker Hub
+    container_name: react-dashboard
+    depends_on:
+      - backend-subscriber
+    ports:
+      - "3000:80"                 # Host port 3000 -> container port 80 (Nginx default)
+
+# ------------------------------
+# Named volume for MySQL data
+# ------------------------------
+volumes:
+  mysql_data:

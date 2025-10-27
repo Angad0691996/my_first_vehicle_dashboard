@@ -1,6 +1,7 @@
 services:
   mysql-db:
     image: mysql:8.0
+    container_name: mysql-db
     env_file:
       - .env
     ports:
@@ -10,7 +11,7 @@ services:
       - ./mysql-init:/docker-entrypoint-initdb.d
 
   backend-subscriber:
-    build: ./backend
+    image: angad696/backend-subscriber:latest
     container_name: backend-subscriber
     env_file:
       - .env
@@ -20,7 +21,7 @@ services:
       - "5000:5000"
 
   react-dashboard:
-    build: .
+    image: angad696/react-dashboard:latest
     container_name: react-dashboard
     ports:
       - "3000:80"

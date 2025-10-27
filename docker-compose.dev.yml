@@ -1,0 +1,52 @@
+# ============================================================
+# Docker Compose - Development Setup (Windows)
+# ------------------------------------------------------------
+# This setup builds images directly from your local source code.
+# Ideal for active development where code changes frequently.
+# ============================================================
+
+services:
+  # ------------------------------
+  # MySQL Database Service
+  # ------------------------------
+  mysql-db:
+    image: mysql:8.0
+    env_file:
+      - .env                      # Load environment variables
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d  # Initializes DB tables and schema
+
+  # ------------------------------
+  # Backend Subscriber (Python)
+  # ------------------------------
+  backend-subscriber:
+    build: ./backend              # Build image from local backend directory
+    image: angad696/backend-subscriber:dev
+    container_name: backend-subscriber
+    env_file:
+      - .env
+    depends_on:
+      - mysql-db
+    ports:
+      - "5000:5000"
+
+  # ------------------------------
+  # React Dashboard (Frontend)
+  # ------------------------------
+  react-dashboard:
+    build: .                      # Build image from current directory (React app)
+    image: angad696/react-dashboard:dev
+    container_name: react-dashboard
+    depends_on:
+      - backend-subscriber
+    ports:
+      - "3000:80"
+
+# ------------------------------
+# Named volume for MySQL data
+# ------------------------------
+volumes:
+  mysql_data:
