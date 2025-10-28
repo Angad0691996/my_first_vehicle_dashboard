@@ -1,0 +1,14 @@
+#Current docker containers
+venv_dashboard) angad@angad-Asus:~/DevOps/my_first_vehicle_dashboard$ docker ps
+CONTAINER ID   IMAGE                                COMMAND                  CREATED         STATUS         PORTS                                                    NAMES
+f89baf6d384e   angad696/react-dashboard:latest      "/docker-entrypoint.…"   5 minutes ago   Up 4 minutes   0.0.0.0:3000->80/tcp, [::]:3000->80/tcp                  react-dashboard
+b9ddda90b0a2   angad696/backend-subscriber:latest   "python subscriber.py"   5 minutes ago   Up 5 minutes   0.0.0.0:5000->5000/tcp, [::]:5000->5000/tcp              backend-subscriber
+fff790078281   mysql:8.0                            "docker-entrypoint.s…"   5 minutes ago   Up 5 minutes   33060/tcp, 0.0.0.0:3307->3306/tcp, [::]:3307->3306/tcp   mysql-db
+
+#commands to stop them 
+sudo docker stop react-dashboard backend-subscriber mysql-db
+sudo docker rm -f react-dashboard backend-subscriber mysql-db
+
+#check if they really stopped
+docker ps
+
