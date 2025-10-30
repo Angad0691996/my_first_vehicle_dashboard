@@ -74,11 +74,11 @@ dba706bcfd63   mysql:8.0                            "docker-entrypoint.s…"   U
 
 | AWS VM | Dashboard |
 |--------|------------|
-| ![AWS VM](assets/AWS_VM.png) | ![Dashboard](assets/AWS-dashboard-1.png) |
+| ![AWS VM](../assets/AWS_VM.png) | ![Dashboard](../assets/AWS-dashboard-1.png) |
 
 ### 📊 Additional Views
-![Dashboard 2](assets/AWS-dashboard-2.png)
-![Dashboard 3](assets/AWS-dashboard-3.png)
+![Dashboard 2](../assets/AWS-dashboard-2.png)
+![Dashboard 3](../assets/AWS-dashboard-3.png)
 
 ---
 
@@ -121,9 +121,8 @@ dba706bcfd63   mysql:8.0                            "docker-entrypoint.s…"   U
 ---
 
 ## 📄 Documentation
-
-📘 [EC2 Docker Compose Infrastructure (.md)](Docs/EC2_Docker_Compose_Infrastructure.md)  
-📗 [EC2 Docker Compose Infrastructure (.pdf)](Docs/EC2_Docker_Compose_Infrastructure.pdf)
+ 
+📗 [EC2 Docker Compose Infrastructure (.pdf)](EC2_Docker_Compose_Infrastructure.pdf)
 
 ---
 
