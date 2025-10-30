@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: react-dashboard
+  template:
+    metadata:
+      labels:
+        app: react-dashboard
+    spec:
+      containers:
+        - name: react-dashboard
+          image: angad696/react-dashboard:latest
+          ports:
+            - containerPort: 80
+          env:
+            # 👇 This ensures the React app calls Flask backend inside the cluster
+            - name: REACT_APP_BACKEND_URL
+              value: "http://backend-subscriber:5000"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: react-dashboard
+spec:
+  type: NodePort
+  selector:
+    app: react-dashboard
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080

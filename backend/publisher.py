@@ -23,6 +23,13 @@ mqtt_client = AWSIoTMQTTClient(CLIENT_ID)
 mqtt_client.configureEndpoint(ENDPOINT, 8883)
 mqtt_client.configureCredentials(ROOT_CA, PRIVATE_KEY, CERTIFICATE)
 
+# Configure MQTT operations parameters
+mqtt_client.configureAutoReconnectBackoffTime(1, 32, 20)
+mqtt_client.configureOfflinePublishQueueing(-1)  # Infinite offline Publish queueing
+mqtt_client.configureDrainingFrequency(2)  # Draining: 2 Hz
+mqtt_client.configureConnectDisconnectTimeout(10)  # 10 sec
+mqtt_client.configureMQTTOperationTimeout(5)  # 5 sec
+
 
 def random_location_within_pune_radius(radius_km=20):
     # Pune coordinates

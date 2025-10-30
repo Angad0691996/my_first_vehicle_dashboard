@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-subscriber
+spec:
+  selector:
+    matchLabels:
+      app: backend-subscriber
+  template:
+    metadata:
+      labels:
+        app: backend-subscriber
+    spec:
+      containers:
+      - name: backend-subscriber
+        image: angad696/backend-subscriber:latest
+        env:
+        - name: DB_HOST
+          value: "mysql-db"
+        - name: DB_USER
+          value: "vehicledbuser"
+        - name: DB_PASSWORD
+          value: "Mycloud@25"
+        - name: DB_NAME
+          value: "vehicle_dashboard"
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-subscriber
+spec:
+  selector:
+    app: backend-subscriber
+  ports:
+    - port: 5000
+      targetPort: 5000
+  type: ClusterIP
