@@ -1,4 +1,0 @@
-"URL","Description","Access Method"
-"http://localhost:5000/latest","Displays the latest telemetry data from the backend MQTT subscriber.","Browser or API client"
-"http://localhost:3000/","The React frontend dashboard UI to visualize vehicle telemetry live and historically.","Browser UI"
-"http://localhost:5000/api/logs","Backend REST API endpoint returning stored telemetry logs, likely in JSON format. Useful for debugging or API integration.","Browser or API client"
