@@ -107,6 +107,8 @@ dba706bcfd63   mysql:8.0                            "docker-entrypoint.s…"   U
 4. **Run with Docker Compose**
    ```bash
    docker-compose -f docker-compose.prod.yml up -d
+   #Since my EC2 has no elastic ip, i update my ec2 public ip in .env here "REACT_APP_BACKEND_URL=http://<latest ec2 ip>:5000" and rebuild the react container 
+
    ```
 
 5. **Verify Containers**
@@ -119,6 +121,33 @@ dba706bcfd63   mysql:8.0                            "docker-entrypoint.s…"   U
    - Flask Backend → `http://<EC2_PUBLIC_IP>:5000/latest`
 
 ---
+
+##Networking
+                [ External User / Client ]       
+                          |                   
+         +----------------+--------------------+
+         |                                     |
+   (EC2 Public IP, Port 3000)           (EC2 Public IP, Port 5000)
+         |                                     |
+ +-------------------+                +-----------------------+
+ |  React Frontend   |--HTTP REST API--| Flask Backend        |
+ |  Container        |                | Subscriber Container  |
+ +-------------------+                +-----------------------+
+                                          |
+                                          | SQL queries
+                                     +-----------------+
+                                     | MySQL Database  |
+                                     | Container       |
+                                     +-----------------+
+
+###Communication Flow
+External users load the React dashboard (http://EC2_PUBLIC_IP:3000).
+
+React makes API calls to the Flask backend (http://EC2_PUBLIC_IP:5000/latest).
+
+Flask API logic fetches data by querying the MySQL database (mysql-db).
+
+Data flows back: Database → Backend → Frontend → User.
 
 ## 📄 Documentation
 
