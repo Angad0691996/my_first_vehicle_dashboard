@@ -68,6 +68,33 @@ dba706bcfd63   mysql:8.0                            "docker-entrypoint.s…"   U
 
 ---
 
+## Basic Docker Networking Diagram for this Project
+                [ External User / Client ]       
+                          |                   
+         +----------------+--------------------+
+         |                                     |
+   (EC2 Public IP, Port 3000)           (EC2 Public IP, Port 5000)
+         |                                     |
+ +-------------------+                +-----------------------+
+ |  React Frontend   |--HTTP REST API--| Flask Backend        |
+ |  Container        |                | Subscriber Container  |
+ +-------------------+                +-----------------------+
+                                          |
+                                          | SQL queries
+                                     +-----------------+
+                                     | MySQL Database  |
+                                     | Container       |
+                                     +-----------------+
+## Communication Flow
+External users load the React dashboard (http://EC2_PUBLIC_IP:3000).
+
+React makes API calls to the Flask backend (http://EC2_PUBLIC_IP:5000/latest).
+
+Flask API logic fetches data by querying the MySQL database (mysql-db).
+
+Data flows back: Database → Backend → Frontend → User.
+
+
 ## 📸 Screenshots
 
 ### 🖥️ AWS VM & Dashboard View
