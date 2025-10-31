@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: backend-subscriber
+  labels:
+    app: backend-subscriber
+spec:
+  containers:
+    - name: backend-subscriber
+      image: angad696/backend-subscriber:latest
+      ports:
+        - containerPort: 5000
+      envFrom:
+        - configMapRef:
+            name: vehicle-config
+        - secretRef:
+            name: vehicle-secrets
