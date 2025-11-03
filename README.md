@@ -46,9 +46,7 @@ my_first_vehicle_dashboard/
 │   ├── app-configmap.yml
 │
 └── Docs/
-    ├── Docker_and_Kubernetes_Command_CheatSheet.pdf
-    ├── EC2_Docker_Compose_Infrastructure.pdf
-    └── README.md
+    ├── 
 ```
 
 ---
