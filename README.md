@@ -1,183 +1,175 @@
-# 🚗 Vehicle Dashboard – Containerized DevOps Architecture
+# 🚘 Vehicle Dashboard – Kubernetes (Minikube Deployment)
 
-A full-stack **Vehicle Telemetry Dashboard** demonstrating a **containerized DevOps architecture** using **Docker Compose**.
-It includes three core services running in isolated containers for modular, portable, and cloud-ready deployment.
-
----
-
-## 🧩 Core Components
-
-| Service | Description | Tech Stack | Default Port |
-|----------|-------------|-------------|---------------|
-| 🖥️ **React Dashboard (Frontend)** | Displays live and historical vehicle data | React + Nginx | 3000 → 80 |
-| ⚙️ **Flask Backend API (Subscriber)** | Subscribes to AWS IoT MQTT data & serves REST APIs | Python (Flask, Paho-MQTT) | 5000 |
-| 🗄️ **MySQL Database** | Stores telemetry history and metadata | MySQL 8.0 | 3307 → 3306 |
+This project demonstrates a **full-stack vehicle telematics system** deployed on **Kubernetes (Minikube)**.  
+It represents a realistic **IoT + DevOps** setup where vehicle telemetry is collected, processed, stored, and visualized through containerized microservices.
 
 ---
 
-## 🏗️ Architecture Overview
+## 🧠 Concept Overview
+
+The system simulates an IoT pipeline:
+
+1. **IoT Publisher (Local)** – Sends vehicle telemetry data over MQTT.  
+2. **Backend Subscriber (Flask)** – Runs inside Kubernetes, receives data, and stores it in MySQL.  
+3. **MySQL Database** – Stores all telemetry logs.  
+4. **Frontend (React)** – Displays real-time vehicle stats and system data visually.
+
+All components run as containers in a **single Kubernetes cluster** (Minikube in this case).
+
+---
+
+## 🧱 Kubernetes Architecture
+
+| Component | Description | Type |
+|------------|-------------|------|
+| **React Dashboard** | Frontend for data visualization | NodePort Service |
+| **Flask Backend Subscriber** | Handles MQTT data & writes to MySQL | ClusterIP Service |
+| **MySQL Database** | Stores all telemetry logs | Headless ClusterIP |
+| **ConfigMap** | Holds environment variables (DB details, backend URL) | Configuration |
+| **Secret** | Stores database credentials | Secret Object |
+
+---
+
+## 📁 Directory Structure
 
 ```
-User Browser (http://localhost:3000)
-        |
-        | HTTP Requests
-        v
-React Dashboard (Nginx)
-        |
-        | Fetch API calls → http://localhost:5000
-        v
-Flask Backend API (Subscriber)
-        |
-        | Docker Network Connection
-        v
-MySQL Database (vehicle_dashboard)
+my_first_vehicle_dashboard/
+│
+├── k8s/
+│   ├── frontend-deployment.yml
+│   ├── frontend-service.yml
+│   ├── backend-deployment.yml
+│   ├── backend-service.yml
+│   ├── mysql-deployment.yml
+│   ├── mysql-service.yml
+│   ├── mysql-secret.yml
+│   ├── app-configmap.yml
+│
+└── Docs/
+    ├── Docker_and_Kubernetes_Command_CheatSheet.pdf
+    ├── EC2_Docker_Compose_Infrastructure.pdf
+    └── README.md
 ```
 
-All services run within a shared Docker network (default: `vehicle_dashboard_default`), ensuring seamless communication between containers.
-
 ---
 
-## 🧱 Running Containers
+## ⚙️ Setup & Deployment
 
-| Container | Image | Ports | Status |
-|------------|--------|--------|--------|
-| `react-dashboard` | `angad696/react-dashboard:latest` | `3000:80` | 🟢 Running |
-| `backend-subscriber` | `angad696/backend-subscriber:latest` | `5000:5000` | 🟢 Running |
-| `mysql-db` | `mysql:8.0` | `3307:3306` | 🟢 Running |
-
----
-
-## 🧰 Development vs Production
-
-| Environment | Compose File | Build Source | Description |
-|--------------|---------------|---------------|--------------|
-| 🧪 **Windows / Development** | `docker-compose.dev.yml` | Local Dockerfile builds | Used to build new images and test updates |
-| 🚀 **Ubuntu / Production** | `docker-compose.prod.yml` | Uses pre-built Docker Hub images | Pulls ready-to-run containers for deployment |
-
----
-
-## ⚙️ Prerequisites
-
-- **Docker** (v27+)
-- **Docker Compose Plugin** (v2.40+)
-- **Git**
-
----
-
-## 🚀 Getting Started
-
-### 1️⃣ Clone the Repository
+### 1️⃣ Start Minikube
 ```bash
-git clone https://github.com/Angad0691996/my_first_vehicle_dashboard.git
-cd my_first_vehicle_dashboard
+minikube start
 ```
 
-### 2️⃣ Start Containers
-- **For local development (build images):**
-  ```bash
-  docker compose -f docker-compose.dev.yml up -d --build
-  ```
-- **For Ubuntu / production (use pre-built images):**
-  ```bash
-  docker compose -f docker-compose.prod.yml up -d
-  ```
-
-### 3️⃣ Verify Containers
+### 2️⃣ Deploy All Components
 ```bash
-docker ps
+kubectl apply -f k8s/
 ```
 
-You should see all three services running.
-
----
-
-## 🗃️ Database Setup
-
-The MySQL database initializes automatically if a `mysql-init` folder with SQL scripts exists.
-
-If not, create the `vehicle_logs` table manually:
-```sql
-CREATE TABLE vehicle_logs (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  vehicle_ID VARCHAR(50),
-  Speed FLOAT,
-  Battery_voltage FLOAT,
-  Engine_Temp FLOAT,
-  Fuel_Level FLOAT,
-  timestamp DATETIME,
-  location VARCHAR(100)
-);
-```
-
-Access the MySQL shell:
+### 3️⃣ Verify Deployments
 ```bash
-docker exec -it mysql-db mysql -u vehicledbuser -p
+kubectl get pods
+kubectl get svc
 ```
 
----
-
-## 🔧 Environment Variables (.env)
-
+Example output:
 ```
-MYSQL_ROOT_PASSWORD=Mycloud@25
-MYSQL_DATABASE=vehicle_dashboard
-MYSQL_USER=vehicledbuser
-MYSQL_PASSWORD=Mycloud@25
-
-DB_HOST=mysql-db
-DB_USER=vehicledbuser
-DB_PASSWORD=Mycloud@25
-DB_NAME=vehicle_dashboard
-
-REACT_APP_BACKEND_URL=http://localhost:5000
+NAME                                  READY   STATUS    RESTARTS   AGE
+backend-subscriber-6bfcd59d76-gjnd9   1/1     Running   0          23m
+mysql-5b69d4dd8-hjfjk                 1/1     Running   0          23m
+react-dashboard-6755b4777-fgk24       1/1     Running   0          23m
 ```
 
----
-
-## 🌿 Git Workflow
-
+### 4️⃣ Access the Frontend
 ```bash
-git checkout -b feature/devops-architecture-setup
-git add .
-git commit -m "Containerized full-stack setup"
-git push -u origin feature/devops-architecture-setup
+minikube service frontend-service --url
 ```
 
-Then open a **Pull Request** on GitHub.
+Example:
+```
+http://192.168.49.2:32141
+```
 
 ---
 
-## 🖼️ Screenshots
+## 🧩 Data Flow
 
-| Dashboard | History Tab | Map View | Architecture |
-|------------|-------------|-----------|---------------|
-| ![](assets/dashboard-preview.png) | ![](assets/dashboard-tab2-history.png) | ![](assets/location.png) | ![](assets/Web%20App%20Architecture%20Flowchart.png) |
+1. **MQTT Publisher** sends JSON payloads like:
+   ```json
+   {
+     "vehicle_ID": "Angad001",
+     "Speed": 70,
+     "Battery_voltage": 13.98,
+     "Engine_Temp": 101,
+     "Fuel_Level": 64,
+     "timestamp": "2025-11-03 16:02:28",
+     "location": "18.480248, 74.021696"
+   }
+   ```
 
----
+2. **Backend Subscriber** inserts data into MySQL:
+   ```sql
+   INSERT INTO vehicle_logs 
+   (vehicle_ID, Speed, Battery_voltage, Engine_Temp, Fuel_Level, timestamp, location)
+   VALUES (...);
+   ```
 
-## 🧠 Highlights
-
-- ✅ Fully **containerized** full-stack app  
-- 🔁 **Seamless data flow** between React → Flask → MySQL  
-- 💾 **Persistent volumes** for MySQL storage  
-- 🌐 Works on **Windows & Ubuntu**  
-- ☁️ Ready for **CI/CD and cloud deployment**
-
----
-
-## 🤝 Contribute
-
-Contributions and feature requests are welcome!  
-Fork the repo, open issues, or submit pull requests.
-
----
-
-## 📄 License
-
-[MIT License](LICENSE)
+3. **Frontend (React)** reads backend API responses and visualizes telemetry in charts and tables.
 
 ---
 
-> **Author:** Angad B.  
-> **Location:** Pune, India  
-> 💡 *“Building the bridge between IoT, Cloud & DevOps.”*
+## 🧾 Sample Database Entries
+
+| id | vehicle_ID | Speed | Battery_voltage | Engine_Temp | Fuel_Level | timestamp | location |
+|----|-------------|--------|-----------------|--------------|-------------|------------|-----------|
+| 1 | Angad001 | 118 | 11.03 | 105 | 15 | 2025-11-03 16:02:08 | 18.480248, 74.021696 |
+| 2 | Angad001 | 47 | 11.06 | 100 | 67 | 2025-11-03 16:02:18 | 18.480248, 74.021696 |
+
+---
+
+## 🧠 DevOps Concepts Covered
+
+- **Docker**: Containerized frontend, backend, and database  
+- **Kubernetes**: Pod orchestration and service management  
+- **ConfigMap & Secrets**: Centralized environment configuration  
+- **Networking**: Service discovery between backend, frontend, and database  
+- **Database Connectivity**: Persistent data layer inside cluster  
+- **Cluster Monitoring**: Using `kubectl` commands and logs
+
+---
+
+## 🌩️ Next Steps (Production-Grade Upgrade)
+
+| Area | Upgrade |
+|------|----------|
+| **Cluster** | Move from Minikube → AWS **EKS** |
+| **Infra as Code** | Automate with **Terraform** |
+| **CI/CD** | Integrate with **Jenkins** or **GitHub Actions** |
+| **Monitoring** | Add **Grafana + Prometheus** |
+| **Ingress** | Use NGINX Ingress Controller for HTTPS routing |
+| **Storage** | Add Persistent Volume Claims (PVCs) for MySQL |
+
+---
+
+## 🌿 Git Branching Strategy
+
+| Branch | Description |
+|--------|--------------|
+| `feature/devops-architecture-setup` | Base DevOps setup for EC2, Jenkins, and Docker |
+| `feature/docker-compose-aws` | AWS EC2 deployment using Docker Compose |
+| `feature/k8s` | Kubernetes (Minikube/EKS) deployment with ConfigMaps, Secrets, and Pods |
+
+---
+
+## 📚 References
+
+- [`Docs/Docker_and_Kubernetes_Command_CheatSheet.pdf`](./Docs/Docker_and_Kubernetes_Command_CheatSheet.pdf)  
+- [`Docs/EC2_Docker_Compose_Infrastructure.pdf`](./Docs/EC2_Docker_Compose_Infrastructure.pdf)
+
+---
+
+## 🧑‍💻 Author
+
+**Angad B.**  
+Cloud, IoT & DevOps Engineer  
+📍 Pune, India  
+🚀 Passionate about building cloud-native IoT and DevOps ecosystems
