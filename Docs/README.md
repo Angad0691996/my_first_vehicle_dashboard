@@ -1,177 +1,175 @@
-# 🚗 Vehicle Dashboard - Docker Compose on AWS EC2
+# 🚘 Vehicle Dashboard – Kubernetes (Minikube Deployment)
 
-A full-stack **IoT Vehicle Dashboard** deployed on an **AWS EC2 (t2.medium)** instance using **Docker Compose**.  
-It integrates **Flask**, **React**, and **MySQL** containers to display live telemetry data from an MQTT-based vehicle publisher.
-
----
-
-## ⚙️ Overview
-
-| Component | Description | Port |
-|------------|--------------|------|
-| **MySQL (Database)** | Stores live vehicle telemetry data | 3307 |
-| **Flask Backend (Subscriber)** | Receives MQTT messages and exposes `/latest` and `/api/logs` APIs | 5000 |
-| **React Frontend (Dashboard)** | Visualizes live vehicle data from the backend | 3000 |
+This project demonstrates a **full-stack vehicle telematics system** deployed on **Kubernetes (Minikube)**.  
+It represents a realistic **IoT + DevOps** setup where vehicle telemetry is collected, processed, stored, and visualized through containerized microservices.
 
 ---
 
-## 🧩 EC2 Configuration
+## 🧠 Concept Overview
 
-| Parameter | Value |
-|------------|--------|
-| **AMI** | Canonical Ubuntu 24.04 (ami-02d26659fd82cf299) |
-| **Instance Type** | t2.medium |
-| **Storage** | 10 GiB |
-| **Security Group** | Ports 22 (SSH), 3000 (React), 5000 (Flask), 3307 (MySQL) open |
+The system simulates an IoT pipeline:
+
+1. **IoT Publisher (Local)** – Sends vehicle telemetry data over MQTT.  
+2. **Backend Subscriber (Flask)** – Runs inside Kubernetes, receives data, and stores it in MySQL.  
+3. **MySQL Database** – Stores all telemetry logs.  
+4. **Frontend (React)** – Displays real-time vehicle stats and system data visually.
+
+All components run as containers in a **single Kubernetes cluster** (Minikube in this case).
 
 ---
 
-## 🗂️ Project Structure
+## 🧱 Kubernetes Architecture
+
+| Component | Description | Type |
+|------------|-------------|------|
+| **React Dashboard** | Frontend for data visualization | NodePort Service |
+| **Flask Backend Subscriber** | Handles MQTT data & writes to MySQL | ClusterIP Service |
+| **MySQL Database** | Stores all telemetry logs | Headless ClusterIP |
+| **ConfigMap** | Holds environment variables (DB details, backend URL) | Configuration |
+| **Secret** | Stores database credentials | Secret Object |
+
+---
+
+## 📁 Directory Structure
 
 ```
 my_first_vehicle_dashboard/
-├── backend/                     # Flask MQTT Subscriber
-├── src/                         # React Frontend
-├── Docs/
-│   ├── EC2_Docker_Compose_Infrastructure.md
-│   └── EC2_Docker_Compose_Infrastructure.pdf
-├── assets/
-│   ├── AWS_VM.png
-│   ├── AWS-dashboard-1.png
-│   ├── AWS-dashboard-2.png
-│   └── AWS-dashboard-3.png
-├── docker-compose.prod.yml      # Docker Compose configuration
-├── .env                         # Environment variables
-└── README.md
+│
+├── k8s/
+│   ├── frontend-deployment.yml
+│   ├── frontend-service.yml
+│   ├── backend-deployment.yml
+│   ├── backend-service.yml
+│   ├── mysql-deployment.yml
+│   ├── mysql-service.yml
+│   ├── mysql-secret.yml
+│   ├── app-configmap.yml
+│
+└── Docs/
+    ├── Docker_and_Kubernetes_Command_CheatSheet.pdf
+    ├── EC2_Docker_Compose_Infrastructure.pdf
+    └── README.md
 ```
 
 ---
 
-## 🐳 Docker Containers on EC2
+## ⚙️ Setup & Deployment
 
+### 1️⃣ Start Minikube
 ```bash
-$ docker ps
-CONTAINER ID   IMAGE                                COMMAND                  STATUS          PORTS
-99f378786ded   angad696/react-dashboard:latest      "/docker-entrypoint.…"   Up 14 mins      0.0.0.0:3000->80/tcp
-3964b47e2c96   angad696/backend-subscriber:latest   "python subscriber.py"   Up 36 mins      0.0.0.0:5000->5000/tcp
-dba706bcfd63   mysql:8.0                            "docker-entrypoint.s…"   Up 36 mins      0.0.0.0:3307->3306/tcp
+minikube start
+```
+
+### 2️⃣ Deploy All Components
+```bash
+kubectl apply -f k8s/
+```
+
+### 3️⃣ Verify Deployments
+```bash
+kubectl get pods
+kubectl get svc
+```
+
+Example output:
+```
+NAME                                  READY   STATUS    RESTARTS   AGE
+backend-subscriber-6bfcd59d76-gjnd9   1/1     Running   0          23m
+mysql-5b69d4dd8-hjfjk                 1/1     Running   0          23m
+react-dashboard-6755b4777-fgk24       1/1     Running   0          23m
+```
+
+### 4️⃣ Access the Frontend
+```bash
+minikube service frontend-service --url
+```
+
+Example:
+```
+http://192.168.49.2:32141
 ```
 
 ---
 
-## 🌍 Access Points
+## 🧩 Data Flow
 
-| Component | URL |
-|------------|------|
-| **React Dashboard** | [http://<EC2_PUBLIC_IP>:3000](http://<EC2_PUBLIC_IP>:3000) |
-| **Flask Backend API** | [http://<EC2_PUBLIC_IP>:5000/latest](http://<EC2_PUBLIC_IP>:5000/latest) |
-
----
-
-## 📸 Screenshots
-
-### 🖥️ AWS VM & Dashboard View
-
-| AWS VM | Dashboard |
-|--------|------------|
-| ![AWS VM](assets/AWS_VM.png) | ![Dashboard](assets/AWS-dashboard-1.png) |
-
-### 📊 Additional Views
-![Dashboard 2](assets/AWS-dashboard-2.png)
-![Dashboard 3](assets/AWS-dashboard-3.png)
-
----
-
-## 🧰 How to Deploy on AWS EC2
-
-1. **Launch EC2 Instance**
-   ```bash
-   Instance Type: t2.medium
-   AMI: Ubuntu 24.04 LTS
+1. **MQTT Publisher** sends JSON payloads like:
+   ```json
+   {
+     "vehicle_ID": "Angad001",
+     "Speed": 70,
+     "Battery_voltage": 13.98,
+     "Engine_Temp": 101,
+     "Fuel_Level": 64,
+     "timestamp": "2025-11-03 16:02:28",
+     "location": "18.480248, 74.021696"
+   }
    ```
 
-2. **Install Docker & Docker Compose**
-   ```bash
-   sudo apt update -y
-   sudo apt install docker.io docker-compose -y
-   sudo usermod -aG docker $USER
-   newgrp docker
+2. **Backend Subscriber** inserts data into MySQL:
+   ```sql
+   INSERT INTO vehicle_logs 
+   (vehicle_ID, Speed, Battery_voltage, Engine_Temp, Fuel_Level, timestamp, location)
+   VALUES (...);
    ```
 
-3. **Clone the Repository**
-   ```bash
-   git clone -b feature/docker-compose-aws https://github.com/Angad0691996/my_first_vehicle_dashboard.git
-   cd my_first_vehicle_dashboard
-   ```
-
-4. **Run with Docker Compose**
-   ```bash
-   docker-compose -f docker-compose.prod.yml up -d
-   #Since my EC2 has no elastic ip, i update my ec2 public ip in .env here "REACT_APP_BACKEND_URL=http://<latest ec2 ip>:5000" and rebuild the react container 
-
-   ```
-
-5. **Verify Containers**
-   ```bash
-   docker ps
-   ```
-
-6. **Access**
-   - React Dashboard → `http://<EC2_PUBLIC_IP>:3000`
-   - Flask Backend → `http://<EC2_PUBLIC_IP>:5000/latest`
+3. **Frontend (React)** reads backend API responses and visualizes telemetry in charts and tables.
 
 ---
 
-##Networking
-                [ External User / Client ]       
-                          |                   
-         +----------------+--------------------+
-         |                                     |
-   (EC2 Public IP, Port 3000)           (EC2 Public IP, Port 5000)
-         |                                     |
- +-------------------+                +-----------------------+
- |  React Frontend   |--HTTP REST API--| Flask Backend        |
- |  Container        |                | Subscriber Container  |
- +-------------------+                +-----------------------+
-                                          |
-                                          | SQL queries
-                                     +-----------------+
-                                     | MySQL Database  |
-                                     | Container       |
-                                     +-----------------+
+## 🧾 Sample Database Entries
 
-###Communication Flow
-External users load the React dashboard (http://EC2_PUBLIC_IP:3000).
-
-React makes API calls to the Flask backend (http://EC2_PUBLIC_IP:5000/latest).
-
-Flask API logic fetches data by querying the MySQL database (mysql-db).
-
-Data flows back: Database → Backend → Frontend → User.
-
-## 📄 Documentation
-
-📘 [EC2 Docker Compose Infrastructure (.md)](Docs/EC2_Docker_Compose_Infrastructure.md)  
-📗 [EC2 Docker Compose Infrastructure (.pdf)](Docs/EC2_Docker_Compose_Infrastructure.pdf)
+| id | vehicle_ID | Speed | Battery_voltage | Engine_Temp | Fuel_Level | timestamp | location |
+|----|-------------|--------|-----------------|--------------|-------------|------------|-----------|
+| 1 | Angad001 | 118 | 11.03 | 105 | 15 | 2025-11-03 16:02:08 | 18.480248, 74.021696 |
+| 2 | Angad001 | 47 | 11.06 | 100 | 67 | 2025-11-03 16:02:18 | 18.480248, 74.021696 |
 
 ---
 
-## 🌿 Git Branch
+## 🧠 DevOps Concepts Covered
 
-This EC2-based deployment is maintained in the branch:  
-**`feature/docker-compose-aws`**
-
----
-
-## 🧠 Summary
-
-- End-to-end IoT data pipeline using Flask, React & MySQL  
-- Data published via MQTT is displayed live on the dashboard  
-- Fully containerized stack deployed on AWS EC2  
-- Easy migration path to Kubernetes for production-grade scaling  
+- **Docker**: Containerized frontend, backend, and database  
+- **Kubernetes**: Pod orchestration and service management  
+- **ConfigMap & Secrets**: Centralized environment configuration  
+- **Networking**: Service discovery between backend, frontend, and database  
+- **Database Connectivity**: Persistent data layer inside cluster  
+- **Cluster Monitoring**: Using `kubectl` commands and logs
 
 ---
 
-**Author:** Angad B.  
-**Location:** Pune, India  
-**Date:** October 2025  
+## 🌩️ Next Steps (Production-Grade Upgrade)
+
+| Area | Upgrade |
+|------|----------|
+| **Cluster** | Move from Minikube → AWS **EKS** |
+| **Infra as Code** | Automate with **Terraform** |
+| **CI/CD** | Integrate with **Jenkins** or **GitHub Actions** |
+| **Monitoring** | Add **Grafana + Prometheus** |
+| **Ingress** | Use NGINX Ingress Controller for HTTPS routing |
+| **Storage** | Add Persistent Volume Claims (PVCs) for MySQL |
+
+---
+
+## 🌿 Git Branching Strategy
+
+| Branch | Description |
+|--------|--------------|
+| `feature/devops-architecture-setup` | Base DevOps setup for EC2, Jenkins, and Docker |
+| `feature/docker-compose-aws` | AWS EC2 deployment using Docker Compose |
+| `feature/k8s` | Kubernetes (Minikube/EKS) deployment with ConfigMaps, Secrets, and Pods |
+
+---
+
+## 📚 References
+
+- [`Docs/Docker_and_Kubernetes_Command_CheatSheet.pdf`](./Docs/Docker_and_Kubernetes_Command_CheatSheet.pdf)  
+- [`Docs/EC2_Docker_Compose_Infrastructure.pdf`](./Docs/EC2_Docker_Compose_Infrastructure.pdf)
+
+---
+
+## 🧑‍💻 Author
+
+**Angad B.**  
+Cloud, IoT & DevOps Engineer  
+📍 Pune, India  
+🚀 Passionate about building cloud-native IoT and DevOps ecosystems

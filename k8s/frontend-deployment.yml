@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: react-dashboard
+  template:
+    metadata:
+      labels:
+        app: react-dashboard
+    spec:
+      containers:
+      - name: react
+        image: angad696/react-dashboard:latest
+        env:
+        - name: REACT_APP_BACKEND_URL
+          value: "http://backend-service:5000"
+        ports:
+        - containerPort: 80
