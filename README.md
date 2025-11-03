@@ -158,10 +158,6 @@ http://192.168.49.2:32141
 
 ---
 
-## 📚 References
-
-- [`Docs/Docker_and_Kubernetes_Command_CheatSheet.pdf`](./Docs/Docker_and_Kubernetes_Command_CheatSheet.pdf)  
-- [`Docs/EC2_Docker_Compose_Infrastructure.pdf`](./Docs/EC2_Docker_Compose_Infrastructure.pdf)
 
 ---
 
