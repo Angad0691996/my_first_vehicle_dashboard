@@ -189,6 +189,58 @@ This EC2-based deployment is maintained in the branch:
 
 ---
 
+# ⚡ Handling Dynamic IP Changes (Frontend Deployment)
+
+Since the React frontend is built with the backend URL **hardcoded**, and the EC2 instance uses a **dynamic public IP** (no Elastic IP), the frontend must be **rebuilt and redeployed** every time the EC2 public IP changes.  
+
+To simplify this, we use a helper script:  
+`redeploy_frontend.sh` — which automates the entire multi-step process.
+
+---
+
+## 🧩 Execution Steps
+
+**1. Grant Execution Permission**
+```bash
+chmod +x redeploy_frontend.sh
+```
+
+**2. Run the Deployment Script**  
+The script will prompt you to enter the latest EC2 public IP.
+```bash
+./redeploy_frontend.sh
+```
+
+---
+
+## ⚙️ Script Automation Workflow
+
+The script automatically performs the following actions:
+
+1. Updates the `REACT_APP_BACKEND_URL` value inside the `.env` file.  
+2. Rebuilds the **React dashboard Docker image** locally (embedding the new backend IP).  
+3. Pushes the newly built image to **Docker Hub**.  
+4. Pulls and restarts the **react-dashboard** service using `docker-compose`.
+
+---
+
+## 🧾 Verification
+
+Check all running containers:
+```bash
+docker ps
+```
+
+---
+
+## 🌐 Access URLs
+
+- **React Dashboard:**  
+  `http://<EC2_PUBLIC_IP>:3000`  
+
+- **Flask Backend:**  
+  `http://<EC2_PUBLIC_IP>:5000/latest`
+
 ## 🧠 Summary
 
 - End-to-end IoT data pipeline using Flask, React & MySQL  
