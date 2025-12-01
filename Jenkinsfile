@@ -6,7 +6,6 @@ pipeline {
         REPO_URL        = 'https://github.com/Angad0691996/my_first_vehicle_dashboard.git'
         BRANCH          = 'feature/docker-compose-aws'
 
-        // Hardcoded EC2 Public IP (update this when IP changes)
         EC2_IP          = '13.201.115.73'
 
         FRONTEND_IMAGE  = 'angad696/react-dashboard:latest'
@@ -17,7 +16,6 @@ pipeline {
 
         stage('Clone Repository') {
             steps {
-                echo "Cloning branch: ${BRANCH}"
                 git(
                     branch: "${BRANCH}",
                     credentialsId: "${GIT_CREDS}",
@@ -26,29 +24,16 @@ pipeline {
             }
         }
 
-        stage('Verify Files') {
-            steps {
-                sh "ls -la"
-                echo "Repository cloned successfully."
-            }
-        }
-
         stage('Update .env with new IP') {
             steps {
-                echo "Updating .env → REACT_APP_BACKEND_URL=http://${EC2_IP}:5000"
-
                 sh """
                     sed -i "s|REACT_APP_BACKEND_URL=.*|REACT_APP_BACKEND_URL=http://${EC2_IP}:5000|g" .env
-                    echo 'Updated .env:'
-                    cat .env
                 """
             }
         }
 
         stage('Build Frontend Image') {
             steps {
-                echo "Building frontend with backend URL http://${EC2_IP}:5000"
-
                 sh """
                     docker build -t ${FRONTEND_IMAGE} \
                         --build-arg REACT_APP_BACKEND_URL=http://${EC2_IP}:5000 .
@@ -56,7 +41,7 @@ pipeline {
             }
         }
 
-        stage('Push Frontend Image to Docker Hub') {
+        stage('Push Frontend Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
                     sh """
@@ -69,15 +54,13 @@ pipeline {
 
         stage('Build Backend Image') {
             steps {
-                echo "Building Backend Image: ${BACKEND_IMAGE}"
-
                 sh """
                     docker build -t ${BACKEND_IMAGE} ./backend
                 """
             }
         }
 
-        stage('Push Backend Image to Docker Hub') {
+        stage('Push Backend Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
                     sh """
@@ -88,31 +71,24 @@ pipeline {
             }
         }
 
-        stage('Deploy to EC2 (docker-compose)') {
+        stage('Deploy Locally (Same EC2)') {
             steps {
-                echo "Deploying to EC2 → ${EC2_IP}"
-
-                sshagent (credentials: ['ec2-ssh-key']) {
-
-                    sh """
-                        ssh -o StrictHostKeyChecking=no ubuntu@${EC2_IP} '
-                            cd ~/angad/my_first_vehicle_dashboard &&
-                            docker compose -f docker-compose.prod.yml down || true &&
-                            docker compose -f docker-compose.prod.yml pull &&
-                            docker compose -f docker-compose.prod.yml up -d
-                        '
-                    """
-                }
+                sh """
+                    cd /home/ubuntu/vehicle-dashboard-app &&
+                    docker compose -f docker-compose.prod.yml down || true &&
+                    docker compose -f docker-compose.prod.yml pull &&
+                    docker compose -f docker-compose.prod.yml up -d
+                """
             }
         }
     }
 
     post {
         success {
-            echo "🎉 FULL CI/CD PIPELINE SUCCESS → Frontend + Backend deployed to EC2"
+            echo "🎉 Deployment Complete!"
         }
         failure {
-            echo "❌ PIPELINE FAILED — check logs"
+            echo "❌ Pipeline Failed"
         }
     }
 }
