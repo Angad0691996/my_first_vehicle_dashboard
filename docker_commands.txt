@@ -1,0 +1,11 @@
+#stop all running containers
+docker stop $(docker ps -q)
+
+#After updateing the .env 
+docker compose -f docker-compose.prod.yml down
+docker pull angad696/backend-subscriber:latest
+docker build -t angad696/react-dashboard:latest .
+docker push angad696/react-dashboard:latest
+docker compose -f docker-compose.prod.yml up -d
+
+
