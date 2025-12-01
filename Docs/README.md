@@ -147,6 +147,26 @@ Data flows back: Database → Backend → Frontend → User.
    - React Dashboard → `http://<EC2_PUBLIC_IP>:3000`
    - Flask Backend → `http://<EC2_PUBLIC_IP>:5000/latest`
 
+7. **Re-deploy after EC2 ON/OFF**
+   🔥 Next Time You Start EC2
+   
+    Just do:
+
+    Update .env → change the IP
+
+    Run the below 3 commands
+
+    # Step 1 — Build frontend with NEW backend IP
+    docker build -t angad696/react-dashboard:latest \
+     --build-arg REACT_APP_BACKEND_URL=http://<NEW_PUBLIC_IP>:5000 .
+
+    # Step 2 — Push new image to Docker Hub
+    docker push angad696/react-dashboard:latest
+
+    # Step 3 — Restart production stack
+    docker compose -f docker-compose.prod.yml down
+    docker compose -f docker-compose.prod.yml up -d
+
 ---
 
 ##Networking
