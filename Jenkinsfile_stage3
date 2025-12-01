@@ -10,7 +10,6 @@ pipeline {
         EC2_IP          = '13.201.115.73'
 
         FRONTEND_IMAGE  = 'angad696/react-dashboard:latest'
-        BACKEND_IMAGE   = 'angad696/backend-subscriber:latest'
     }
 
     stages {
@@ -67,52 +66,14 @@ pipeline {
             }
         }
 
-        stage('Build Backend Image') {
-            steps {
-                echo "Building Backend Image: ${BACKEND_IMAGE}"
-
-                sh """
-                    docker build -t ${BACKEND_IMAGE} ./backend
-                """
-            }
-        }
-
-        stage('Push Backend Image to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
-                    sh """
-                        echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin
-                        docker push ${BACKEND_IMAGE}
-                    """
-                }
-            }
-        }
-
-        stage('Deploy to EC2 (docker-compose)') {
-            steps {
-                echo "Deploying to EC2 → ${EC2_IP}"
-
-                sshagent (credentials: ['ec2-ssh-key']) {
-
-                    sh """
-                        ssh -o StrictHostKeyChecking=no ubuntu@${EC2_IP} '
-                            cd ~/angad/my_first_vehicle_dashboard &&
-                            docker compose -f docker-compose.prod.yml down || true &&
-                            docker compose -f docker-compose.prod.yml pull &&
-                            docker compose -f docker-compose.prod.yml up -d
-                        '
-                    """
-                }
-            }
-        }
     }
 
     post {
         success {
-            echo "🎉 FULL CI/CD PIPELINE SUCCESS → Frontend + Backend deployed to EC2"
+            echo "🎉 Frontend image built and pushed successfully."
         }
         failure {
-            echo "❌ PIPELINE FAILED — check logs"
+            echo "❌ Pipeline failed — check logs."
         }
     }
 }
