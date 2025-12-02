@@ -4,7 +4,7 @@ pipeline {
     environment {
         GIT_CREDS     = 'github-credentials'
         DOCKER_CREDS  = 'docker-hub-credentials'
-        EC2_KEY       = 'ec2-ssh-key'
+        EC2_KEY       = 'ec2-ssh-key'        // correct credential ID
         REPO_URL      = 'https://github.com/Angad0691996/my_first_vehicle_dashboard.git'
         BRANCH        = 'feature/docker-compose-aws'
         APP_DIR       = '/home/ubuntu/vehicle-dashboard-app'
@@ -27,7 +27,7 @@ pipeline {
         }
 
         /* -----------------------------
-           2. Detect EC2 Public IP (NEW)
+           2. Detect Public IP (Auto)
         ------------------------------ */
         stage('Detect EC2 Public IP') {
             steps {
@@ -44,14 +44,14 @@ pipeline {
         }
 
         /* -----------------------------
-           3. Update .env with backend URL
+           3. Update .env with Backend URL
         ------------------------------ */
-        stage('Update .env with Backend URL') {
+        stage('Update .env') {
             steps {
                 script {
                     sh """
                     sed -i 's|REACT_APP_BACKEND_URL=.*|REACT_APP_BACKEND_URL=http://${EC2_IP}:5000|g' .env
-                    echo '.env updated with new backend URL'
+                    echo '.env updated with backend URL http://${EC2_IP}:5000'
                     """
                 }
             }
@@ -92,27 +92,27 @@ pipeline {
         }
 
         /* -----------------------------
-           6. Deploy on EC2
+           6. Deploy on EC2 (FULL CLEAN)
         ------------------------------ */
         stage('Deploy to EC2') {
             steps {
                 sshagent([EC2_KEY]) {
                     sh """
-                    ssh -o StrictHostKeyChecking=no ubuntu@${EC2_IP} '
-                        mkdir -p ${APP_DIR}
-                        cd ${APP_DIR}
-
-                        # Copy fresh repo from Jenkins workspace
-                        rm -rf ${APP_DIR}/*
-                    '
-                    
-                    # Sync repo contents to EC2 app folder
+                    echo "Syncing repo to EC2 ${EC2_IP}:${APP_DIR} ..."
                     rsync -avz --delete ./ ubuntu@${EC2_IP}:${APP_DIR}
 
+                    echo "Running deployment on EC2..."
                     ssh -o StrictHostKeyChecking=no ubuntu@${EC2_IP} '
                         cd ${APP_DIR}
+
+                        echo "🔥 Removing ALL old containers to avoid conflicts..."
+                        docker ps -aq | xargs -r docker rm -f
+
+                        echo "⬇ Pulling latest images..."
                         docker compose -f docker-compose.prod.yml down || true
                         docker compose -f docker-compose.prod.yml pull
+
+                        echo "🚀 Starting new containers..."
                         docker compose -f docker-compose.prod.yml up -d
                     '
                     """
