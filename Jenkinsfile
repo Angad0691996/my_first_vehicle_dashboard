@@ -4,7 +4,7 @@ pipeline {
     environment {
         GIT_CREDS     = 'github-credentials'
         DOCKER_CREDS  = 'docker-hub-credentials'
-        EC2_KEY       = 'jenkins-2 ec2 key'
+        EC2_KEY       = 'ec2-ssh-key'
         REPO_URL      = 'https://github.com/Angad0691996/my_first_vehicle_dashboard.git'
         BRANCH        = 'feature/docker-compose-aws'
         APP_DIR       = '/home/ubuntu/vehicle-dashboard-app'
