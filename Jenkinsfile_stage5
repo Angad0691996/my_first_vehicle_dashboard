@@ -4,7 +4,7 @@ pipeline {
     environment {
         GIT_CREDS     = 'github-credentials'
         DOCKER_CREDS  = 'docker-hub-credentials'
-        EC2_KEY       = 'ec2-ssh-key'
+        EC2_KEY       = 'ec2-ssh-key'        // correct credential ID
         REPO_URL      = 'https://github.com/Angad0691996/my_first_vehicle_dashboard.git'
         BRANCH        = 'feature/docker-compose-aws'
         APP_DIR       = '/home/ubuntu/vehicle-dashboard-app'
@@ -44,26 +44,30 @@ pipeline {
         }
 
         /* -----------------------------
-           3. Update .env
+           3. Update .env with Backend URL
         ------------------------------ */
         stage('Update .env') {
             steps {
-                sh """
-                sed -i 's|REACT_APP_BACKEND_URL=.*|REACT_APP_BACKEND_URL=http://${EC2_IP}:5000|g' .env
-                echo '.env updated with http://${EC2_IP}:5000'
-                """
+                script {
+                    sh """
+                    sed -i 's|REACT_APP_BACKEND_URL=.*|REACT_APP_BACKEND_URL=http://${EC2_IP}:5000|g' .env
+                    echo '.env updated with backend URL http://${EC2_IP}:5000'
+                    """
+                }
             }
         }
 
         /* -----------------------------
-           4. Build Frontend Image
+           4. Build Frontend Docker Image
         ------------------------------ */
         stage('Build Frontend Image') {
             steps {
-                sh """
-                docker build -t angad696/react-dashboard:latest \
-                --build-arg REACT_APP_BACKEND_URL=http://${EC2_IP}:5000 .
-                """
+                script {
+                    sh """
+                    docker build -t angad696/react-dashboard:latest \
+                      --build-arg REACT_APP_BACKEND_URL=http://${EC2_IP}:5000 .
+                    """
+                }
             }
         }
 
@@ -72,45 +76,43 @@ pipeline {
         ------------------------------ */
         stage('Push Frontend Image') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: "${DOCKER_CREDS}",
-                    usernameVariable: 'USER',
-                    passwordVariable: 'PASS'
-                )]) {
-                    sh """
-                    echo "$PASS" | docker login -u "$USER" --password-stdin
-                    docker push angad696/react-dashboard:latest
-                    """
+                script {
+                    withCredentials([usernamePassword(
+                        credentialsId: "${DOCKER_CREDS}",
+                        usernameVariable: 'USER',
+                        passwordVariable: 'PASS'
+                    )]) {
+                        sh """
+                        echo "$PASS" | docker login -u "$USER" --password-stdin
+                        docker push angad696/react-dashboard:latest
+                        """
+                    }
                 }
             }
         }
 
         /* -----------------------------
-           6. Deploy to EC2 (NO HOST KEY CHECK)
+           6. Deploy on EC2 (FULL CLEAN)
         ------------------------------ */
         stage('Deploy to EC2') {
             steps {
                 sshagent([EC2_KEY]) {
                     sh """
                     echo "Syncing repo to EC2 ${EC2_IP}:${APP_DIR} ..."
-
-                    rsync -avz --delete \
-                      -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-                      ./ ubuntu@${EC2_IP}:${APP_DIR}
+                    rsync -avz --delete ./ ubuntu@${EC2_IP}:${APP_DIR}
 
                     echo "Running deployment on EC2..."
-
-                    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${EC2_IP} '
+                    ssh -o StrictHostKeyChecking=no ubuntu@${EC2_IP} '
                         cd ${APP_DIR}
 
-                        echo "🔥 Removing ALL old containers..."
-                        docker ps -aq | xargs -r docker rm -f || true
+                        echo "🔥 Removing ALL old containers to avoid conflicts..."
+                        docker ps -aq | xargs -r docker rm -f
 
-                        echo "⬇ Pull latest Docker images..."
+                        echo "⬇ Pulling latest images..."
                         docker compose -f docker-compose.prod.yml down || true
                         docker compose -f docker-compose.prod.yml pull
 
-                        echo "🚀 Starting new stack..."
+                        echo "🚀 Starting new containers..."
                         docker compose -f docker-compose.prod.yml up -d
                     '
                     """
