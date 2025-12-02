@@ -1,0 +1,1 @@
+#Here the stage1 to stage4 means the each stage is tried individually and then all combined as a single Jenkinsfile
